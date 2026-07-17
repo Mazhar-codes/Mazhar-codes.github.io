@@ -202,6 +202,28 @@
   .engine-chip{text-align:center;padding:1.1rem 0.6rem;border:1px solid var(--panel-line);border-radius:14px;font-size:0.82rem;color:var(--muted);background:rgba(255,255,255,0.02);}
   .engine-chip b{display:block;color:var(--text);font-family:'Space Grotesk',sans-serif;margin-bottom:.3rem;font-size:.95rem;}
 
+  /* FYP AWARD */
+  .fyp-award{
+    display:grid;grid-template-columns:1.2fr 0.8fr;gap:2.5rem;align-items:center;
+    margin-top:1.6rem;border:1px solid rgba(110,87,255,0.35);border-radius:22px;padding:2.4rem;
+    background:linear-gradient(160deg,rgba(110,87,255,0.12),rgba(94,234,212,0.05));
+  }
+  @media(max-width:800px){.fyp-award{grid-template-columns:1fr;}}
+  .award-eyebrow{display:inline-flex;align-items:center;gap:.5rem;padding:0.4rem 1rem;border-radius:100px;font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;background:rgba(94,234,212,0.12);color:var(--cyan);border:1px solid rgba(94,234,212,0.3);margin-bottom:1.1rem;}
+  .fyp-award h3{font-size:clamp(1.3rem,2.6vw,1.9rem);margin-bottom:0.7rem;}
+  .fyp-award p{color:var(--muted);line-height:1.75;font-size:0.97rem;max-width:52ch;}
+  .fyp-poster{
+    position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--panel-line);
+    max-height:420px;cursor:pointer;box-shadow:0 24px 50px -18px rgba(0,0,0,0.55);
+  }
+  .fyp-poster img{width:100%;display:block;object-fit:cover;object-position:top;max-height:420px;transition:transform .5s ease;}
+  .fyp-poster:hover img{transform:scale(1.03);}
+  .fyp-poster::after{
+    content:'View full poster';position:absolute;left:0;right:0;bottom:0;padding:2.2rem 0 0.9rem;text-align:center;
+    font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text);
+    background:linear-gradient(transparent,rgba(10,10,10,0.9));pointer-events:none;
+  }
+
   /* PROJECTS — vertical layout (normal page scroll, no scroll-jacking) */
   .project{
     display:grid;grid-template-columns:0.85fr 1.15fr;gap:3.5rem;align-items:center;
@@ -274,7 +296,7 @@
   .lightbox img{
     width:auto;height:auto;
     max-width:92vw;max-height:88vh;
-    min-width:min(560px,92vw);
+    min-width:min(560px,92vw);object-fit:contain;
     border-radius:12px;border:1px solid var(--panel-line);box-shadow:0 40px 80px rgba(0,0,0,0.6);
   }
   .lightbox-close{position:absolute;top:2rem;right:2.5rem;font-size:2rem;color:var(--muted);cursor:pointer;transition:.3s;}
@@ -419,8 +441,8 @@
     <h2 class="sec-title">Flagship Work</h2>
   </div>
   <div class="fyp-card reveal">
-    <span class="fyp-tag">Cybersecurity · AI/ML</span>
-    <h3>Intelligent Extended Detection &amp; Response (XDR) Platform</h3>
+    <span class="fyp-tag">Cybersecurity · AI/ML · 2nd Best FYP</span>
+    <h3>Cyber Sentinel XDR — AI-Powered Threat Detection &amp; Response</h3>
     <p style="color:var(--muted);max-width:60ch;line-height:1.8;">A unified threat-detection platform that fuses four independent AI detection engines into a single composite risk score — closing the loop from raw signal to automated response.</p>
     <div class="fyp-engines">
       <div class="engine-chip"><b>Engine 1</b>System Behavior</div>
@@ -433,6 +455,17 @@
       <li><span class="n">02</span> Built a fusion engine that combines all four engine scores into a single composite risk score to classify activity as malicious or benign.</li>
       <li><span class="n">03</span> Implemented automated decision logic that triggers mitigation actions based on the fused threat score — from detection straight to response.</li>
     </ul>
+  </div>
+
+  <div class="fyp-award reveal">
+    <div>
+      <span class="award-eyebrow">🏆 Award</span>
+      <h3>2nd Position — Best Final Year Project</h3>
+      <p>Cyber Sentinel XDR secured <strong style="color:var(--text);">2nd position for Best Final Year Project</strong> in the Department of Computer Science at the Institute of Space Technology (KICSIT, Kahuta Campus) — recognized for its four-agent AI detection architecture, weighted fusion engine, and automated response evaluated on 375K+ real held-out benchmark samples.</p>
+    </div>
+    <div class="fyp-poster lightbox-trigger" data-full="assets/img/fyp-standee.jpg">
+      <img src="assets/img/fyp-standee.jpg" alt="Cyber Sentinel XDR — official project standee">
+    </div>
   </div>
 </section>
 
