@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#05060f" />
+  <meta name="description" content="Devastator — a fast, responsive arcade space shooter. Blast waves of enemies, earn coins, and upgrade your ship." />
+  <title>Devastator — Arcade Space Shooter</title>
+  <link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+  <!-- Game world -->
+  <canvas id="game" role="img" aria-label="Space shooter game"></canvas>
+
+  <!-- In-game HUD -->
+  <div id="hud" class="hidden">
+    <div class="hud-top">
+      <div class="hud-cluster">
+        <span class="chip">SCORE <b data-hud-score>0</b></span>
+        <span class="chip">💰 <b data-hud-coins>0</b></span>
+        <span class="chip">WAVE <b data-hud-wave>1</b></span>
+      </div>
+      <button class="icon-btn" data-pause aria-label="Pause">⏸</button>
+    </div>
+
+    <div class="boss-bar hidden" data-boss-bar>
+      <span class="boss-name" data-boss-name>BOSS</span>
+      <div class="boss-hp"><i data-boss-hp></i></div>
+    </div>
+
+    <div class="combo hidden" data-combo><b data-combo-mult>x2</b><span>COMBO</span></div>
+    <div class="buffs" data-buffs></div>
+
+    <div class="hud-bottom">
+      <div class="hp-wrap">
+        <div class="hp-bar"><i data-hp-fill></i></div>
+        <span class="shield" data-shield></span>
+      </div>
+    </div>
+    <button class="bomb-btn" data-bomb aria-label="Mega bomb">💣<span data-bomb-count>1</span></button>
+    <button class="missile-btn" data-fire-missile aria-label="Fire missile">🚀<span data-missile-ammo>0</span></button>
+  </div>
+
+  <!-- Overlay screens (menu / shop / pause / game over) -->
+  <div id="overlay"></div>
+
+  <!-- Transient banner -->
+  <div id="toast" class="hidden"></div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

@@ -328,6 +328,28 @@
   .footer-lead{color:var(--muted);max-width:46ch;margin-bottom:2.4rem;font-size:1.05rem;line-height:1.7;}
   .footer-links{display:flex;justify-content:center;gap:1.2rem;flex-wrap:wrap;margin-bottom:3rem;}
   .footer-bottom{position:relative;z-index:2;text-align:center;padding:2rem;color:var(--muted2);font-size:0.8rem;border-top:1px solid var(--panel-line);width:100%;}
+
+  /* GAME SECTION (reuses .project / .project-info layout) */
+  .game-cta{display:flex;gap:1rem;flex-wrap:wrap;margin-top:1.8rem;}
+  .game-note{color:var(--muted2);font-size:0.78rem;margin-top:1.1rem;letter-spacing:.02em;}
+  .game-frame{
+    position:relative;aspect-ratio:16/10;border-radius:16px;overflow:hidden;
+    border:1px solid var(--panel-line);background:#05060f;
+    box-shadow:0 40px 90px -30px rgba(110,87,255,0.45), 0 0 0 1px rgba(94,234,212,0.06);
+  }
+  .game-frame::after{content:'';position:absolute;inset:0;pointer-events:none;border-radius:16px;
+    box-shadow:inset 0 0 80px rgba(110,87,255,0.12);}
+  .game-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;}
+  .game-frame .frame-tag{
+    position:absolute;top:12px;left:12px;z-index:2;pointer-events:none;
+    background:rgba(10,10,10,0.7);border:1px solid var(--panel-line);backdrop-filter:blur(6px);
+    color:var(--cyan);font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;
+    padding:5px 11px;border-radius:100px;
+  }
+  .game-frame .frame-tag .live{display:inline-block;width:7px;height:7px;border-radius:50%;
+    background:var(--cyan);box-shadow:0 0 10px 2px var(--cyan);margin-right:6px;vertical-align:middle;
+    animation:livePulse 1.6s ease-in-out infinite;}
+  @keyframes livePulse{50%{opacity:.35;}}
 </style>
 </head>
 <body>
@@ -346,6 +368,7 @@
       <li><a href="#projects">Projects</a></li>
       <li><a href="#research">Research</a></li>
       <li><a href="#achievements">Achievements</a></li>
+      <li><a href="#game">Game</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
   </nav>
@@ -358,6 +381,7 @@
   <a href="#projects">Projects</a>
   <a href="#research">Research</a>
   <a href="#achievements">Achievements</a>
+  <a href="#game">Game</a>
   <a href="#contact">Contact</a>
 </div>
 
@@ -625,9 +649,41 @@
   </div>
 </section>
 
+<!-- GAME -->
+<section id="game">
+  <div class="reveal">
+    <div class="sec-label"><span class="num">06</span> Just for Fun</div>
+    <h2 class="sec-title">Play a Game I Made</h2>
+  </div>
+
+  <div class="project reveal">
+    <div class="project-info">
+      <span class="role">Original HTML5 Game · Vanilla JavaScript</span>
+      <h3>Devastator — Arcade Space Shooter</h3>
+      <div class="stack"><span>Canvas 2D</span><span>ES Modules</span><span>Software 3D Renderer</span><span>Web Audio</span><span>Object Pooling</span><span>No Libraries</span></div>
+      <ul>
+        <li>A fast, juicy vertical shooter built entirely from scratch — no game engine, no dependencies, no build step.</li>
+        <li>Custom fixed-timestep physics with hit-stop, screen shake, shockwaves and floating combos; a self-contained low-poly 3D ship renderer that ships zero art assets.</li>
+        <li>Full progression loop: hangar of ships, guns &amp; homing rockets, coin economy, upgrades and 14 unlockable achievements.</li>
+      </ul>
+      <div class="game-cta">
+        <a class="btn btn-primary" href="game/index.html">▶ Play Game</a>
+        <a class="btn btn-ghost" href="game/index.html" target="_blank" rel="noopener">Open in New Tab ↗</a>
+      </div>
+      <p class="game-note">Desktop: WASD / arrows move · mouse aim · click / space fire · shift missile · B bomb. &nbsp;Mobile: touch to move &amp; auto-fire. &nbsp;A <b>← Back to Portfolio</b> button returns you here.</p>
+    </div>
+    <div class="project-media">
+      <div class="game-frame">
+        <span class="frame-tag"><span class="live"></span>Live · Playable</span>
+        <iframe src="game/index.html" title="Devastator — playable preview" loading="lazy" allow="autoplay"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- CONTACT / FOOTER -->
 <section id="contact" class="footer-section">
-  <div class="sec-label" style="justify-content:center;"><span class="num">06</span> Contact</div>
+  <div class="sec-label" style="justify-content:center;"><span class="num">07</span> Contact</div>
   <h2 class="footer-title" id="footerTitle">Let's Build</h2>
   <p class="footer-lead">Open to opportunities in Software Development, AI/ML, and Cybersecurity. Reach out — always happy to connect with recruiters and fellow builders.</p>
   <div class="footer-links">

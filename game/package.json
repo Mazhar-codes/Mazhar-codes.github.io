@@ -1,0 +1,12 @@
+{
+  "name": "devastator",
+  "version": "0.1.0",
+  "description": "Devastator — a fast, responsive web-based arcade space shooter with a coin economy, ship/weapon/skin shop, upgrades, and pluggable ad monetization.",
+  "type": "module",
+  "scripts": {
+    "start": "node serve.mjs",
+    "dev": "node serve.mjs"
+  },
+  "keywords": ["game", "html5", "canvas", "arcade", "space-shooter"],
+  "license": "MIT"
+}
