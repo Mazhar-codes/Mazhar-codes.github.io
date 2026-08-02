@@ -1,0 +1,12 @@
+{
+  "name": "nitro-rush",
+  "version": "1.0.0",
+  "description": "Nitro Rush — a fast, responsive pseudo-3D arcade racer with 6 environments, tunable cars (NFS-style upgrades), AI opponents, lap & sprint modes, and a Free/Hardcore economy. Pure HTML5 Canvas + ES modules, no build step, no dependencies.",
+  "type": "module",
+  "scripts": {
+    "start": "node serve.mjs",
+    "dev": "node serve.mjs"
+  },
+  "keywords": ["game", "html5", "canvas", "racing", "arcade", "pseudo-3d"],
+  "license": "MIT"
+}

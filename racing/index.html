@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0e17" />
+  <meta name="description" content="Nitro Rush — a fast arcade racer across desert, snow, beach, island, mountain and city tracks. Tune your car and chase the checkered flag." />
+  <title>Nitro Rush — Arcade Racer</title>
+  <link rel="stylesheet" href="src/styles.css?v=2" />
+</head>
+<body>
+  <!-- Stage keeps the fixed-resolution canvas letterboxed and centered -->
+  <div id="stage">
+    <canvas id="game" width="1024" height="640" role="img" aria-label="Racing game"></canvas>
+
+    <!-- In-race HUD -->
+    <div id="hud" class="hidden">
+      <!-- Top-left: position / lap / time -->
+      <div class="hud-tl">
+        <div class="pos-badge"><b data-pos>1</b><span data-pos-total>/6</span><small>POS</small></div>
+        <div class="tl-rows">
+          <div class="tl-row"><span>LAP</span><b data-lap>1/3</b></div>
+          <div class="tl-row"><span>TIME</span><b data-time>0:00.00</b></div>
+          <div class="tl-row"><span>LAST</span><b data-last>--:--</b></div>
+          <div class="tl-row best"><span>BEST</span><b data-best>--:--</b></div>
+        </div>
+      </div>
+
+      <!-- Top-center transient (lap splits, warnings) -->
+      <div class="race-toast hidden" data-race-toast></div>
+
+      <!-- Bottom-right: speed + gear -->
+      <div class="hud-br">
+        <div class="gear" data-gear>N</div>
+        <div class="speed"><b data-speed>0</b><span>KM/H</span></div>
+        <div class="rpm-bar"><i data-rpm></i></div>
+      </div>
+
+      <!-- Bottom-left: minimap -->
+      <canvas id="minimap" class="hud-bl" width="200" height="200"></canvas>
+
+      <button class="icon-btn" data-pause aria-label="Pause">⏸</button>
+    </div>
+
+    <!-- Menus / overlays -->
+    <div id="overlay"></div>
+    <div id="toast" class="hidden"></div>
+
+    <!-- Touch controls (mobile) -->
+    <div id="touch" class="hidden">
+      <button class="t-btn t-left"  data-touch="left">◀</button>
+      <button class="t-btn t-right" data-touch="right">▶</button>
+      <button class="t-btn t-brake" data-touch="brake">BRAKE</button>
+      <button class="t-btn t-boost" data-touch="boost">NITRO</button>
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
