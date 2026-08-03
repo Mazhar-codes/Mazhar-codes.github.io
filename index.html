@@ -1046,5 +1046,126 @@ lightbox.addEventListener('click', (e)=>{ if(e.target===lightbox) lightbox.class
 })();
 
 </script>
+<!-- ============================ Inline CMS / live editor ============================
+     Owner-only editing. Secret entry: click the profile photo 20x within 60s.
+     Login gate (client-side convenience). Real publishing requires a GitHub
+     token that only the owner enters (stored in their browser, never in code). -->
+<style id="cms-style">
+  #cms-bar,.cms-modal,.cms-overlay{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  #cms-bar{position:fixed;top:0;left:0;right:0;z-index:99999;display:flex;gap:7px;align-items:center;flex-wrap:wrap;padding:8px 12px;background:#0d0d14;border-bottom:1px solid #6e57ff;box-shadow:0 4px 22px rgba(0,0,0,.55)}
+  #cms-bar button{background:#1b1b28;color:#f0ede6;border:1px solid #2c2c3a;border-radius:8px;padding:7px 11px;font-size:13px;font-weight:600;cursor:pointer;line-height:1}
+  #cms-bar button:hover{border-color:#6e57ff}
+  #cms-bar button.primary{background:#6e57ff;border-color:#6e57ff;color:#fff}
+  #cms-bar button.danger{background:#3a1420;border-color:#e0466b;color:#ffd0da}
+  #cms-bar .cms-title{color:#6e57ff;font-weight:800;margin-right:4px;letter-spacing:.5px;font-size:13px}
+  #cms-bar .cms-status{color:#9a9a92;font-size:12px;margin-left:auto;max-width:40vw;text-align:right}
+  body.cms-editing{padding-top:54px !important}
+  body.cms-editing [contenteditable="true"]{outline:2px solid #6e57ff;outline-offset:2px;border-radius:3px;background:rgba(110,87,255,.06)}
+  body.cms-editing .cms-selected{outline:2px dashed #e0466b !important;outline-offset:3px}
+  body.cms-editing img{cursor:copy}
+  .cms-overlay{position:fixed;inset:0;z-index:100000;background:rgba(6,6,10,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px}
+  .cms-modal{width:min(420px,94vw);background:#12121a;border:1px solid #2c2c3a;border-radius:16px;padding:24px;color:#f0ede6;box-shadow:0 22px 60px rgba(0,0,0,.6)}
+  .cms-modal h3{margin:0 0 4px;font-size:20px}
+  .cms-modal p{margin:0 0 14px;color:#9a9a92;font-size:13px;line-height:1.5}
+  .cms-modal input{width:100%;padding:11px 13px;margin-bottom:11px;background:#0d0d14;border:1px solid #2c2c3a;border-radius:10px;color:#f0ede6;font-size:14px}
+  .cms-modal input:focus{outline:none;border-color:#6e57ff}
+  .cms-row{display:flex;gap:8px;margin-top:4px}
+  .cms-row button{flex:1;padding:11px;border-radius:10px;border:none;cursor:pointer;font-weight:700;font-size:14px}
+  .cms-row .go{background:#6e57ff;color:#fff}.cms-row .cancel{background:#1b1b28;color:#f0ede6;border:1px solid #2c2c3a}
+  .cms-err{color:#e0466b;font-size:13px;min-height:16px;margin-bottom:4px}
+  .cms-box{padding:1.5rem;border:1px solid rgba(110,87,255,.35);border-radius:14px;background:rgba(110,87,255,.06);margin:1rem 0}
+</style>
+<script id="cms-script">
+(function(){
+  "use strict";
+  var CFG={user:"Maximus_1",pass:"Portfolio_1",repo:"Mazhar-codes/Mazhar-codes.github.io",branch:"main",file:"index.html",clicks:20,windowMs:60000};
+  var selected=null;
+  function el(t,c,h){var e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;}
+  function status(m){var s=document.getElementById("cms-status");if(s)s.textContent=m;}
+
+  // ---- secret trigger: 20 clicks on the profile photo within 60s ----
+  var pic=document.querySelector('.profile-photo img, img[src*="profile.jpg"]');
+  var taps=[];
+  if(pic){pic.addEventListener("click",function(){var now=Date.now();taps.push(now);taps=taps.filter(function(t){return now-t<=CFG.windowMs;});if(taps.length>=CFG.clicks){taps=[];openLogin();}});}
+
+  // ---- login gate ----
+  function openLogin(){
+    if(document.getElementById("cms-login"))return;
+    var ov=el("div","cms-overlay");ov.id="cms-login";
+    ov.innerHTML='<div class="cms-modal"><h3>🔒 Editor Login</h3><p>Enter your credentials to edit this site.</p><div class="cms-err" id="cms-lerr"></div><input id="cms-u" placeholder="Username" autocomplete="off"><input id="cms-p" type="password" placeholder="Password"><div class="cms-row"><button class="go" id="cms-lgo">Enter Editor</button><button class="cancel" id="cms-lx">Cancel</button></div></div>';
+    document.body.appendChild(ov);document.getElementById("cms-u").focus();
+    document.getElementById("cms-lx").onclick=function(){ov.remove();};
+    document.getElementById("cms-lgo").onclick=function(){var u=document.getElementById("cms-u").value,p=document.getElementById("cms-p").value;if(u===CFG.user&&p===CFG.pass){ov.remove();enterEdit();}else document.getElementById("cms-lerr").textContent="Incorrect username or password.";};
+    ov.addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("cms-lgo").click();});
+  }
+
+  // ---- edit mode ----
+  function enterEdit(){document.body.classList.add("cms-editing");buildBar();document.body.addEventListener("click",onPick,true);}
+  function onPick(ev){
+    var t=ev.target;
+    if(t.closest("#cms-bar")||t.closest(".cms-overlay"))return;
+    if(t.tagName==="IMG"){ev.preventDefault();ev.stopPropagation();selectEl(t);replaceImage(t);return;}
+    if(t.tagName==="A"||t.tagName==="BUTTON")ev.preventDefault();
+    editEl(t);selectEl(t);
+  }
+  function editEl(t){
+    document.querySelectorAll('[contenteditable="true"]').forEach(function(e){if(e!==t&&!e.closest("#cms-bar"))e.removeAttribute("contenteditable");});
+    if(t.getAttribute("contenteditable")!=="true"){t.setAttribute("contenteditable","true");setTimeout(function(){t.focus();},0);}
+  }
+  function selectEl(t){if(selected)selected.classList.remove("cms-selected");selected=t;if(t)t.classList.add("cms-selected");}
+
+  function buildBar(){
+    if(document.getElementById("cms-bar"))return;
+    var bar=el("div");bar.id="cms-bar";bar.innerHTML='<span class="cms-title">✎ EDIT MODE</span>';
+    [["＋ Text",addText],["＋ Box",addBox],["＋ Section",addSection],["🖼 Image",insertImage],["⧉ Duplicate",dup],["🗑 Delete",delSel,"danger"],["🚀 Save &amp; Publish",publish,"primary"],["✕ Exit",function(){location.reload();}]].forEach(function(a){var b=el("button",a[2]||"",a[0]);b.onclick=a[1];bar.appendChild(b);});
+    var st=el("span","cms-status","Click any text to edit · click an image to replace it");st.id="cms-status";bar.appendChild(st);
+    document.body.appendChild(bar);
+  }
+  function place(node){var sec=selected&&selected.closest("section");(sec||document.body).appendChild(node);selectEl(node);node.scrollIntoView({behavior:"smooth",block:"center"});}
+  function addText(){var p=el("p",null,"New text — click to edit.");p.setAttribute("contenteditable","true");place(p);}
+  function addBox(){var d=el("div","cms-box",'<h3 contenteditable="true" style="margin:0 0 .5rem">New Box</h3><p contenteditable="true" style="margin:0">Box content — click to edit.</p>');place(d);}
+  function addSection(){var s=el("section",null,'<div style="max-width:1400px;margin:0 auto;padding:5rem 8vw"><h2 contenteditable="true" style="font-size:clamp(1.8rem,4vw,3rem);font-weight:700;margin-bottom:1rem">New Section</h2><p contenteditable="true">Section content — click to edit.</p></div>');var c=document.getElementById("contact");if(c)c.parentNode.insertBefore(s,c);else document.body.appendChild(s);selectEl(s);s.scrollIntoView({behavior:"smooth"});}
+  function dup(){if(!selected)return status("Select something first");var c=selected.cloneNode(true);selected.parentNode.insertBefore(c,selected.nextSibling);selectEl(c);status("Duplicated ✓");}
+  function delSel(){if(!selected)return status("Click an element, then Delete");if(!confirm("Delete this element?"))return;var p=selected;selected=null;p.remove();status("Deleted ✓");}
+  function insertImage(){pickFile(function(u){var i=el("img");i.src=u;i.style.maxWidth="100%";i.style.borderRadius="12px";i.style.display="block";i.style.margin="1rem 0";place(i);});}
+  function replaceImage(im){if(!confirm("Replace this image?"))return;pickFile(function(u){im.src=u;im.removeAttribute("srcset");status("Image replaced ✓");});}
+  function pickFile(cb){var inp=el("input");inp.type="file";inp.accept="image/*";inp.onchange=function(){var f=inp.files[0];if(!f)return;if(f.size>1.5*1024*1024){alert("Please use an image under 1.5 MB — it is embedded directly in the page.");return;}var r=new FileReader();r.onload=function(){cb(r.result);};r.readAsDataURL(f);};inp.click();}
+
+  // ---- serialize the page back to clean HTML ----
+  function serialize(){
+    var clone=document.documentElement.cloneNode(true);
+    clone.querySelectorAll("#cms-bar,.cms-overlay").forEach(function(e){e.remove();});
+    clone.querySelectorAll("[contenteditable]").forEach(function(e){e.removeAttribute("contenteditable");});
+    clone.querySelectorAll(".cms-selected").forEach(function(e){e.classList.remove("cms-selected");});
+    var b=clone.querySelector("body");if(b)b.classList.remove("cms-editing");
+    return "<!DOCTYPE html>\n"+clone.outerHTML;
+  }
+  function saveDraft(){try{localStorage.setItem("cms-draft",serialize());status("Draft saved in this browser ✓");}catch(e){status("Draft too large for local storage");}}
+
+  // ---- publish: commit to GitHub via the Contents API (owner token) ----
+  function getToken(cb){
+    var tok=localStorage.getItem("cms-gh-token");if(tok){cb(tok);return;}
+    var ov=el("div","cms-overlay");
+    ov.innerHTML='<div class="cms-modal"><h3>Connect GitHub</h3><p>Paste a <b>fine-grained token</b> with <b>Contents: Read &amp; write</b> on <b>'+CFG.repo+'</b>. Stored only in this browser and used to commit your edits.</p><div class="cms-err" id="cms-terr"></div><input id="cms-tok" type="password" placeholder="github_pat_..."><div class="cms-row"><button class="go" id="cms-tgo">Save &amp; Publish</button><button class="cancel" id="cms-tx">Cancel</button></div></div>';
+    document.body.appendChild(ov);document.getElementById("cms-tok").focus();
+    document.getElementById("cms-tx").onclick=function(){ov.remove();status("Publish cancelled");};
+    document.getElementById("cms-tgo").onclick=function(){var v=document.getElementById("cms-tok").value.trim();if(!v){document.getElementById("cms-terr").textContent="Please paste a token.";return;}localStorage.setItem("cms-gh-token",v);ov.remove();cb(v);};
+  }
+  function b64(s){return btoa(unescape(encodeURIComponent(s)));}
+  function publish(){
+    getToken(function(tok){
+      status("Publishing…");
+      var html=serialize(),api="https://api.github.com/repos/"+CFG.repo+"/contents/"+encodeURIComponent(CFG.file),
+          H={Authorization:"Bearer "+tok,Accept:"application/vnd.github+json"};
+      fetch(api+"?ref="+CFG.branch,{headers:H,cache:"no-store"})
+        .then(function(r){if(r.status===401||r.status===403){localStorage.removeItem("cms-gh-token");throw new Error("Token rejected — check its scope (Contents: write on the repo).");}return r.json();})
+        .then(function(cur){return fetch(api,{method:"PUT",headers:H,body:JSON.stringify({message:"Edit portfolio via inline editor",content:b64(html),sha:cur.sha,branch:CFG.branch})});})
+        .then(function(r){return r.ok?r.json():r.json().then(function(j){throw new Error(j.message||("HTTP "+r.status));});})
+        .then(function(){localStorage.removeItem("cms-draft");status("Published ✓ — live in ~1 min");alert("Published! Your changes are committed to GitHub and will be live in about a minute.");})
+        .catch(function(e){status("Publish failed: "+e.message);alert("Publish failed: "+e.message);});
+    });
+  }
+})();
+</script>
 </body>
 </html>
