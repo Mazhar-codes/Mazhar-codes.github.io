@@ -1078,10 +1078,11 @@ lightbox.addEventListener('click', (e)=>{ if(e.target===lightbox) lightbox.class
 <script id="cms-script">
 (function(){
   "use strict";
-  var CFG={user:"Maximus_1",pass:"Portfolio_1",repo:"Mazhar-codes/Mazhar-codes.github.io",branch:"main",file:"index.html",clicks:20,windowMs:60000};
+  var CFG={uHash:"ab3ac4008931ce9efdd04c5389e560481e26e6d16326b4eecfb8f1dccb94932b",pHash:"71aecfc9941cc671b775b8e25a4d215c1acee0a82c377c26cfcaf1f0e953e919",repo:"Mazhar-codes/Mazhar-codes.github.io",branch:"main",file:"index.html",clicks:20,windowMs:60000};
   var selected=null;
   function el(t,c,h){var e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;}
   function status(m){var s=document.getElementById("cms-status");if(s)s.textContent=m;}
+  function sha(s){return crypto.subtle.digest("SHA-256",new TextEncoder().encode(s)).then(function(b){return Array.from(new Uint8Array(b)).map(function(x){return("0"+x.toString(16)).slice(-2);}).join("");});}
 
   // ---- secret trigger: 20 clicks on the profile photo within 60s ----
   var pic=document.querySelector('.profile-photo img, img[src*="profile.jpg"]');
@@ -1095,7 +1096,7 @@ lightbox.addEventListener('click', (e)=>{ if(e.target===lightbox) lightbox.class
     ov.innerHTML='<div class="cms-modal"><h3>🔒 Editor Login</h3><p>Enter your credentials to edit this site.</p><div class="cms-err" id="cms-lerr"></div><input id="cms-u" placeholder="Username" autocomplete="off"><input id="cms-p" type="password" placeholder="Password"><div class="cms-row"><button class="go" id="cms-lgo">Enter Editor</button><button class="cancel" id="cms-lx">Cancel</button></div></div>';
     document.body.appendChild(ov);document.getElementById("cms-u").focus();
     document.getElementById("cms-lx").onclick=function(){ov.remove();};
-    document.getElementById("cms-lgo").onclick=function(){var u=document.getElementById("cms-u").value,p=document.getElementById("cms-p").value;if(u===CFG.user&&p===CFG.pass){ov.remove();enterEdit();}else document.getElementById("cms-lerr").textContent="Incorrect username or password.";};
+    document.getElementById("cms-lgo").onclick=function(){var u=document.getElementById("cms-u").value,p=document.getElementById("cms-p").value;Promise.all([sha(u),sha(p)]).then(function(h){if(h[0]===CFG.uHash&&h[1]===CFG.pHash){ov.remove();enterEdit();}else document.getElementById("cms-lerr").textContent="Incorrect username or password.";});};
     ov.addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("cms-lgo").click();});
   }
 
@@ -1117,18 +1118,26 @@ lightbox.addEventListener('click', (e)=>{ if(e.target===lightbox) lightbox.class
   function buildBar(){
     if(document.getElementById("cms-bar"))return;
     var bar=el("div");bar.id="cms-bar";bar.innerHTML='<span class="cms-title">✎ EDIT MODE</span>';
-    [["＋ Text",addText],["＋ Box",addBox],["＋ Section",addSection],["🖼 Image",insertImage],["⧉ Duplicate",dup],["🗑 Delete",delSel,"danger"],["🚀 Save &amp; Publish",publish,"primary"],["✕ Exit",function(){location.reload();}]].forEach(function(a){var b=el("button",a[2]||"",a[0]);b.onclick=a[1];bar.appendChild(b);});
+    [["＋ Text",addText],["＋ Box",addBox],["＋ Section",addSection],["🖼 Image",insertImage],["🔗 Link",editLink],["↑ Up",moveUp],["↓ Down",moveDown],["⧉ Dup",dup],["🗑 Delete",delSel,"danger"],["↺ Undo",undo],["🚀 Save &amp; Publish",publish,"primary"],["🔓 Forget Token",forgetToken],["✕ Exit",function(){location.reload();}]].forEach(function(a){var b=el("button",a[2]||"",a[0]);b.onclick=a[1];bar.appendChild(b);});
     var st=el("span","cms-status","Click any text to edit · click an image to replace it");st.id="cms-status";bar.appendChild(st);
     document.body.appendChild(bar);
   }
   function place(node){var sec=selected&&selected.closest("section");(sec||document.body).appendChild(node);selectEl(node);node.scrollIntoView({behavior:"smooth",block:"center"});}
-  function addText(){var p=el("p",null,"New text — click to edit.");p.setAttribute("contenteditable","true");place(p);}
-  function addBox(){var d=el("div","cms-box",'<h3 contenteditable="true" style="margin:0 0 .5rem">New Box</h3><p contenteditable="true" style="margin:0">Box content — click to edit.</p>');place(d);}
-  function addSection(){var s=el("section",null,'<div style="max-width:1400px;margin:0 auto;padding:5rem 8vw"><h2 contenteditable="true" style="font-size:clamp(1.8rem,4vw,3rem);font-weight:700;margin-bottom:1rem">New Section</h2><p contenteditable="true">Section content — click to edit.</p></div>');var c=document.getElementById("contact");if(c)c.parentNode.insertBefore(s,c);else document.body.appendChild(s);selectEl(s);s.scrollIntoView({behavior:"smooth"});}
-  function dup(){if(!selected)return status("Select something first");var c=selected.cloneNode(true);selected.parentNode.insertBefore(c,selected.nextSibling);selectEl(c);status("Duplicated ✓");}
-  function delSel(){if(!selected)return status("Click an element, then Delete");if(!confirm("Delete this element?"))return;var p=selected;selected=null;p.remove();status("Deleted ✓");}
-  function insertImage(){pickFile(function(u){var i=el("img");i.src=u;i.style.maxWidth="100%";i.style.borderRadius="12px";i.style.display="block";i.style.margin="1rem 0";place(i);});}
-  function replaceImage(im){if(!confirm("Replace this image?"))return;pickFile(function(u){im.src=u;im.removeAttribute("srcset");status("Image replaced ✓");});}
+  function addText(){snap();var p=el("p",null,"New text — click to edit.");p.setAttribute("contenteditable","true");place(p);}
+  function addBox(){snap();var d=el("div","cms-box",'<h3 contenteditable="true" style="margin:0 0 .5rem">New Box</h3><p contenteditable="true" style="margin:0">Box content — click to edit.</p>');place(d);}
+  function addSection(){snap();var s=el("section",null,'<div style="max-width:1400px;margin:0 auto;padding:5rem 8vw"><h2 contenteditable="true" style="font-size:clamp(1.8rem,4vw,3rem);font-weight:700;margin-bottom:1rem">New Section</h2><p contenteditable="true">Section content — click to edit.</p></div>');var c=document.getElementById("contact");if(c)c.parentNode.insertBefore(s,c);else document.body.appendChild(s);selectEl(s);s.scrollIntoView({behavior:"smooth"});}
+  function dup(){if(!selected)return status("Select something first");snap();var c=selected.cloneNode(true);selected.parentNode.insertBefore(c,selected.nextSibling);selectEl(c);status("Duplicated ✓");}
+  function delSel(){if(!selected)return status("Click an element, then Delete");if(!confirm("Delete this element?"))return;snap();var p=selected;selected=null;p.remove();status("Deleted ✓");}
+  function insertImage(){pickFile(function(u){snap();var i=el("img");i.src=u;i.style.maxWidth="100%";i.style.borderRadius="12px";i.style.display="block";i.style.margin="1rem 0";place(i);});}
+  function replaceImage(im){if(!confirm("Replace this image?"))return;pickFile(function(u){snap();im.src=u;im.removeAttribute("srcset");status("Image replaced ✓");});}
+  // ---- reorder / links / undo / token ----
+  var undoStack=[];
+  function snap(){try{undoStack.push(document.body.innerHTML);if(undoStack.length>25)undoStack.shift();}catch(e){}}
+  function undo(){if(!undoStack.length)return status("Nothing to undo");document.body.innerHTML=undoStack.pop();selected=null;var old=document.getElementById("cms-bar");if(old)old.remove();buildBar();status("Undone ↺");}
+  function moveUp(){if(!selected)return status("Select an element first");var prev=selected.previousElementSibling;if(prev&&prev.id!=="cms-bar"){snap();selected.parentNode.insertBefore(selected,prev);selected.scrollIntoView({block:"center"});status("Moved up ↑");}else status("Already at the top");}
+  function moveDown(){if(!selected)return status("Select an element first");var next=selected.nextElementSibling;if(next&&next.id!=="cms-bar"){snap();selected.parentNode.insertBefore(next,selected);selected.scrollIntoView({block:"center"});status("Moved down ↓");}else status("Already at the bottom");}
+  function editLink(){var a=selected&&(selected.tagName==="A"?selected:selected.closest("a"));if(!a)return status("Click a link first, then 🔗 Link");var url=prompt("Link URL:",a.getAttribute("href")||"https://");if(url!==null){snap();a.setAttribute("href",url);status("Link updated ✓");}}
+  function forgetToken(){localStorage.removeItem("cms-gh-token");status("GitHub token cleared from this browser ✓");}
   function pickFile(cb){var inp=el("input");inp.type="file";inp.accept="image/*";inp.onchange=function(){var f=inp.files[0];if(!f)return;if(f.size>1.5*1024*1024){alert("Please use an image under 1.5 MB — it is embedded directly in the page.");return;}var r=new FileReader();r.onload=function(){cb(r.result);};r.readAsDataURL(f);};inp.click();}
 
   // ---- serialize the page back to clean HTML ----
@@ -1152,10 +1161,15 @@ lightbox.addEventListener('click', (e)=>{ if(e.target===lightbox) lightbox.class
     document.getElementById("cms-tgo").onclick=function(){var v=document.getElementById("cms-tok").value.trim();if(!v){document.getElementById("cms-terr").textContent="Please paste a token.";return;}localStorage.setItem("cms-gh-token",v);ov.remove();cb(v);};
   }
   function b64(s){return btoa(unescape(encodeURIComponent(s)));}
+  // Railguard: never publish an empty/broken page.
+  function safeToPublish(html){return html.length>8000 && html.indexOf('id="cms-script"')>-1 && html.indexOf('id="home"')>-1 && html.indexOf('</html>')>-1;}
   function publish(){
+    if(!confirm("Publish these changes to your live site now?"))return;
+    var html=serialize();
+    if(!safeToPublish(html)){status("Publish blocked — safety check");alert("Safety check failed: the page looks empty or broken, so nothing was published. Use ↺ Undo and try again.");return;}
     getToken(function(tok){
       status("Publishing…");
-      var html=serialize(),api="https://api.github.com/repos/"+CFG.repo+"/contents/"+encodeURIComponent(CFG.file),
+      var api="https://api.github.com/repos/"+CFG.repo+"/contents/"+encodeURIComponent(CFG.file),
           H={Authorization:"Bearer "+tok,Accept:"application/vnd.github+json"};
       fetch(api+"?ref="+CFG.branch,{headers:H,cache:"no-store"})
         .then(function(r){if(r.status===401||r.status===403){localStorage.removeItem("cms-gh-token");throw new Error("Token rejected — check its scope (Contents: write on the repo).");}return r.json();})
