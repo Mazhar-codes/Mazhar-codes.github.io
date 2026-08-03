@@ -1074,6 +1074,8 @@ lightbox.addEventListener('click', (e)=>{ if(e.target===lightbox) lightbox.class
   .cms-row .go{background:#6e57ff;color:#fff}.cms-row .cancel{background:#1b1b28;color:#f0ede6;border:1px solid #2c2c3a}
   .cms-err{color:#e0466b;font-size:13px;min-height:16px;margin-bottom:4px}
   .cms-box{padding:1.5rem;border:1px solid rgba(110,87,255,.35);border-radius:14px;background:rgba(110,87,255,.06);margin:1rem 0}
+  .cms-hidden{display:none !important}
+  body.cms-editing .cms-hidden{display:revert !important;opacity:.45;outline:2px dashed #e0466b;outline-offset:3px}
 </style>
 <script id="cms-script">
 (function(){
@@ -1118,7 +1120,7 @@ lightbox.addEventListener('click', (e)=>{ if(e.target===lightbox) lightbox.class
   function buildBar(){
     if(document.getElementById("cms-bar"))return;
     var bar=el("div");bar.id="cms-bar";bar.innerHTML='<span class="cms-title">✎ EDIT MODE</span>';
-    [["＋ Text",addText],["＋ Box",addBox],["＋ Section",addSection],["🖼 Image",insertImage],["🔗 Link",editLink],["↑ Up",moveUp],["↓ Down",moveDown],["⧉ Dup",dup],["🗑 Delete",delSel,"danger"],["↺ Undo",undo],["🚀 Save &amp; Publish",publish,"primary"],["🔓 Forget Token",forgetToken],["✕ Exit",function(){location.reload();}]].forEach(function(a){var b=el("button",a[2]||"",a[0]);b.onclick=a[1];bar.appendChild(b);});
+    [["＋ Text",addText],["＋ Box",addBox],["＋ Section",addSection],["🖼 Image",insertImage],["🔗 Link",editLink],["↑ Up",moveUp],["↓ Down",moveDown],["⧉ Dup",dup],["🗑 Delete",delSel,"danger"],["👁 Hide/Show",toggleHide],["↺ Undo",undo],["🚀 Save &amp; Publish",publish,"primary"],["🔓 Forget Token",forgetToken],["✕ Exit",function(){location.reload();}]].forEach(function(a){var b=el("button",a[2]||"",a[0]);b.onclick=a[1];bar.appendChild(b);});
     var st=el("span","cms-status","Click any text to edit · click an image to replace it");st.id="cms-status";bar.appendChild(st);
     document.body.appendChild(bar);
   }
@@ -1128,8 +1130,8 @@ lightbox.addEventListener('click', (e)=>{ if(e.target===lightbox) lightbox.class
   function addSection(){snap();var s=el("section",null,'<div style="max-width:1400px;margin:0 auto;padding:5rem 8vw"><h2 contenteditable="true" style="font-size:clamp(1.8rem,4vw,3rem);font-weight:700;margin-bottom:1rem">New Section</h2><p contenteditable="true">Section content — click to edit.</p></div>');var c=document.getElementById("contact");if(c)c.parentNode.insertBefore(s,c);else document.body.appendChild(s);selectEl(s);s.scrollIntoView({behavior:"smooth"});}
   function dup(){if(!selected)return status("Select something first");snap();var c=selected.cloneNode(true);selected.parentNode.insertBefore(c,selected.nextSibling);selectEl(c);status("Duplicated ✓");}
   function delSel(){if(!selected)return status("Click an element, then Delete");if(!confirm("Delete this element?"))return;snap();var p=selected;selected=null;p.remove();status("Deleted ✓");}
-  function insertImage(){pickFile(function(u){snap();var i=el("img");i.src=u;i.style.maxWidth="100%";i.style.borderRadius="12px";i.style.display="block";i.style.margin="1rem 0";place(i);});}
-  function replaceImage(im){if(!confirm("Replace this image?"))return;pickFile(function(u){snap();im.src=u;im.removeAttribute("srcset");status("Image replaced ✓");});}
+  function insertImage(){pickFile(function(u){snap();var i=el("img");i.src=u;i.setAttribute("data-cms-upload","1");i.style.maxWidth="100%";i.style.borderRadius="12px";i.style.display="block";i.style.margin="1rem 0";place(i);});}
+  function replaceImage(im){if(!confirm("Replace this image?"))return;pickFile(function(u){snap();im.src=u;im.setAttribute("data-cms-upload","1");im.removeAttribute("srcset");status("Image replaced ✓");});}
   // ---- reorder / links / undo / token ----
   var undoStack=[];
   function snap(){try{undoStack.push(document.body.innerHTML);if(undoStack.length>25)undoStack.shift();}catch(e){}}
@@ -1138,6 +1140,7 @@ lightbox.addEventListener('click', (e)=>{ if(e.target===lightbox) lightbox.class
   function moveDown(){if(!selected)return status("Select an element first");var next=selected.nextElementSibling;if(next&&next.id!=="cms-bar"){snap();selected.parentNode.insertBefore(next,selected);selected.scrollIntoView({block:"center"});status("Moved down ↓");}else status("Already at the bottom");}
   function editLink(){var a=selected&&(selected.tagName==="A"?selected:selected.closest("a"));if(!a)return status("Click a link first, then 🔗 Link");var url=prompt("Link URL:",a.getAttribute("href")||"https://");if(url!==null){snap();a.setAttribute("href",url);status("Link updated ✓");}}
   function forgetToken(){localStorage.removeItem("cms-gh-token");status("GitHub token cleared from this browser ✓");}
+  function toggleHide(){var sec=selected&&(selected.tagName==="SECTION"?selected:selected.closest("section"));if(!sec)return status("Select a section first, then Hide/Show");snap();var hide=!sec.classList.contains("cms-hidden");sec.classList.toggle("cms-hidden",hide);if(sec.id)document.querySelectorAll('a[href="#'+sec.id+'"]').forEach(function(a){a.classList.toggle("cms-hidden",hide);});status(hide?"Section hidden — kept in your code, off the live site 🙈":"Section shown again ✓");}
   function pickFile(cb){var inp=el("input");inp.type="file";inp.accept="image/*";inp.onchange=function(){var f=inp.files[0];if(!f)return;if(f.size>1.5*1024*1024){alert("Please use an image under 1.5 MB — it is embedded directly in the page.");return;}var r=new FileReader();r.onload=function(){cb(r.result);};r.readAsDataURL(f);};inp.click();}
 
   // ---- serialize the page back to clean HTML ----
@@ -1161,22 +1164,39 @@ lightbox.addEventListener('click', (e)=>{ if(e.target===lightbox) lightbox.class
     document.getElementById("cms-tgo").onclick=function(){var v=document.getElementById("cms-tok").value.trim();if(!v){document.getElementById("cms-terr").textContent="Please paste a token.";return;}localStorage.setItem("cms-gh-token",v);ov.remove();cb(v);};
   }
   function b64(s){return btoa(unescape(encodeURIComponent(s)));}
+  function extOf(u){var m=/^data:image\/([a-z0-9+]+);base64,/i.exec(u||"");var e=m?m[1].toLowerCase():"png";if(e==="jpeg")e="jpg";if(e==="svg+xml")e="svg";return e;}
+  // Upload any freshly-added images to the repo as real files (so the HTML stays
+  // small), then point them at their committed path. Runs before the HTML commit.
+  function uploadImages(tok){
+    var imgs=[].slice.call(document.querySelectorAll('img[data-cms-upload]'));
+    var H={Authorization:"Bearer "+tok,Accept:"application/vnd.github+json"};
+    return imgs.reduce(function(chain,im){return chain.then(function(){
+      var src=im.getAttribute("src")||"",b=src.indexOf("base64,");
+      if(b<0){im.removeAttribute("data-cms-upload");return;}
+      var path="assets/img/uploads/up-"+Date.now()+"-"+Math.random().toString(36).slice(2,7)+"."+extOf(src);
+      return fetch("https://api.github.com/repos/"+CFG.repo+"/contents/"+path,{method:"PUT",headers:H,body:JSON.stringify({message:"Upload image via editor",content:src.slice(b+7),branch:CFG.branch})})
+        .then(function(r){return r.ok?r.json():r.json().then(function(j){throw new Error("Image upload failed: "+(j.message||r.status));});})
+        .then(function(){im.setAttribute("src",path);im.removeAttribute("data-cms-upload");});
+    });},Promise.resolve());
+  }
   // Railguard: never publish an empty/broken page.
   function safeToPublish(html){return html.length>8000 && html.indexOf('id="cms-script"')>-1 && html.indexOf('id="home"')>-1 && html.indexOf('</html>')>-1;}
   function publish(){
     if(!confirm("Publish these changes to your live site now?"))return;
-    var html=serialize();
-    if(!safeToPublish(html)){status("Publish blocked — safety check");alert("Safety check failed: the page looks empty or broken, so nothing was published. Use ↺ Undo and try again.");return;}
     getToken(function(tok){
-      status("Publishing…");
-      var api="https://api.github.com/repos/"+CFG.repo+"/contents/"+encodeURIComponent(CFG.file),
-          H={Authorization:"Bearer "+tok,Accept:"application/vnd.github+json"};
-      fetch(api+"?ref="+CFG.branch,{headers:H,cache:"no-store"})
-        .then(function(r){if(r.status===401||r.status===403){localStorage.removeItem("cms-gh-token");throw new Error("Token rejected — check its scope (Contents: write on the repo).");}return r.json();})
-        .then(function(cur){return fetch(api,{method:"PUT",headers:H,body:JSON.stringify({message:"Edit portfolio via inline editor",content:b64(html),sha:cur.sha,branch:CFG.branch})});})
-        .then(function(r){return r.ok?r.json():r.json().then(function(j){throw new Error(j.message||("HTTP "+r.status));});})
-        .then(function(){localStorage.removeItem("cms-draft");status("Published ✓ — live in ~1 min");alert("Published! Your changes are committed to GitHub and will be live in about a minute.");})
-        .catch(function(e){status("Publish failed: "+e.message);alert("Publish failed: "+e.message);});
+      status("Uploading images…");
+      uploadImages(tok).then(function(){
+        var html=serialize();
+        if(!safeToPublish(html)){status("Publish blocked — safety check");alert("Safety check failed: the page looks empty or broken, so nothing was published. Use ↺ Undo and try again.");return;}
+        status("Publishing…");
+        var api="https://api.github.com/repos/"+CFG.repo+"/contents/"+encodeURIComponent(CFG.file),
+            H={Authorization:"Bearer "+tok,Accept:"application/vnd.github+json"};
+        return fetch(api+"?ref="+CFG.branch,{headers:H,cache:"no-store"})
+          .then(function(r){if(r.status===401||r.status===403){localStorage.removeItem("cms-gh-token");throw new Error("Token rejected — check its scope (Contents: write on the repo).");}return r.json();})
+          .then(function(cur){return fetch(api,{method:"PUT",headers:H,body:JSON.stringify({message:"Edit portfolio via inline editor",content:b64(html),sha:cur.sha,branch:CFG.branch})});})
+          .then(function(r){return r.ok?r.json():r.json().then(function(j){throw new Error(j.message||("HTTP "+r.status));});})
+          .then(function(){status("Published ✓ — live in ~1 min");alert("Published! Your changes are committed to GitHub and will be live in about a minute.");});
+      }).catch(function(e){status("Publish failed: "+e.message);alert("Publish failed: "+e.message);});
     });
   }
 })();
